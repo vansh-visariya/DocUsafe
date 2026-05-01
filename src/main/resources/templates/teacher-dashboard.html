@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DocUsafe Teacher Dashboard</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap");
+
+      :root {
+        color-scheme: light;
+        --ink: #0f172a;
+        --muted: #64748b;
+        --brand: #0f4c81;
+        --surface: #ffffff;
+        --border: #e2e8f0;
+        --shadow: 0 16px 32px rgba(15, 76, 129, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Space Grotesk", sans-serif;
+        background: #f1f5f9;
+        color: var(--ink);
+      }
+
+      header {
+        background: linear-gradient(120deg, #0f4c81, #123a63);
+        color: #fff;
+        padding: 20px 26px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      header a {
+        color: #fff;
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      main {
+        max-width: 1200px;
+        margin: 24px auto;
+        padding: 0 16px 40px;
+        display: grid;
+        gap: 16px;
+      }
+
+      section {
+        background: var(--surface);
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+      }
+
+      h2 {
+        margin: 0 0 12px;
+        font-size: 20px;
+      }
+
+      .message {
+        padding: 10px 12px;
+        border-radius: 10px;
+        font-size: 13px;
+        margin-bottom: 12px;
+      }
+
+      .success {
+        background: #dcfce7;
+        color: #166534;
+      }
+
+      .error {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      form.inline {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      input, select, button {
+        padding: 8px 10px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        font-size: 13px;
+      }
+
+      button {
+        background: var(--brand);
+        color: #fff;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      button.secondary {
+        background: #e2e8f0;
+        color: var(--ink);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+
+      th, td {
+        text-align: left;
+        padding: 10px;
+        border-bottom: 1px solid #e2e8f0;
+        vertical-align: top;
+      }
+
+      th {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+      }
+
+      .pill {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+
+      .pill.verified {
+        background: #dcfce7;
+        color: #166534;
+      }
+
+      .pill.rejected {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      .muted {
+        color: var(--muted);
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <div style="font-weight: 700; font-size: 18px;">DocUsafe Teacher</div>
+        <div class="muted">Review documents shared with you</div>
+      </div>
+      <a th:href="@{/logout}">Logout</a>
+    </header>
+
+    <main>
+      <section>
+        <h2>Shared Documents</h2>
+        <div th:if="${message}" class="message success" th:text="${message}"></div>
+        <div th:if="${error}" class="message error" th:text="${error}"></div>
+
+        <form class="inline" method="get" th:action="@{/ui/teacher}">
+          <select name="status">
+            <option value="" th:selected="${status == ''}">All statuses</option>
+            <option value="PENDING" th:selected="${status == 'PENDING'}">Pending</option>
+            <option value="VERIFIED" th:selected="${status == 'VERIFIED'}">Verified</option>
+            <option value="REJECTED" th:selected="${status == 'REJECTED'}">Rejected</option>
+          </select>
+          <button type="submit">Filter</button>
+        </form>
+
+        <div style="overflow-x: auto; margin-top: 16px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Document</th>
+                <th>Student</th>
+                <th>Status</th>
+                <th>Remarks</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:if="${#lists.isEmpty(documents)}">
+                <td colspan="5" class="muted">No documents shared with you.</td>
+              </tr>
+              <tr th:each="doc : ${documents}">
+                <td>
+                  <div th:text="${doc.title}"></div>
+                  <div class="muted" th:text="${doc.fileName}"></div>
+                  <a class="muted" th:href="@{/ui/documents/{id}/download(id=${doc.id})}">Download</a>
+                </td>
+                <td>
+                  <div th:text="${doc.uploadedBy != null ? doc.uploadedBy.name : 'Unknown'}"></div>
+                  <div class="muted" th:text="${doc.uploadedBy != null ? doc.uploadedBy.email : ''}"></div>
+                </td>
+                <td>
+                  <span class="pill" th:classappend="${doc.status == 'VERIFIED' ? 'verified' : (doc.status == 'REJECTED' ? 'rejected' : '')}" th:text="${doc.status}"></span>
+                </td>
+                <td>
+                  <div th:text="${doc.reviewRemarks}"></div>
+                </td>
+                <td>
+                  <form class="inline" th:action="@{/ui/teacher/documents/{id}/verify(id=${doc.id})}" method="post">
+                    <input name="remarks" placeholder="Remarks" />
+                    <button type="submit">Verify</button>
+                  </form>
+                  <form class="inline" th:action="@{/ui/teacher/documents/{id}/reject(id=${doc.id})}" method="post" style="margin-top: 8px;">
+                    <input name="reason" placeholder="Reason" required />
+                    <button type="submit" class="secondary">Reject</button>
+                  </form>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

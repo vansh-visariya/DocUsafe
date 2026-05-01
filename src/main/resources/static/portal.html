@@ -1,0 +1,685 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DocUsafe Portal</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap");
+
+      :root {
+        color-scheme: light;
+        --ink: #0f172a;
+        --muted: #64748b;
+        --brand: #0f4c81;
+        --brand-light: #e1f0ff;
+        --surface: #ffffff;
+        --surface-alt: #f8fafc;
+        --border: #e2e8f0;
+        --shadow: 0 14px 40px rgba(15, 76, 129, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Space Grotesk", sans-serif;
+        margin: 0;
+        background: radial-gradient(circle at top left, #eef7ff, #f6f7fb 45%, #ffffff 100%);
+        color: var(--ink);
+      }
+
+      header {
+        background: linear-gradient(120deg, #0f4c81, #123a63);
+        color: #fff;
+        padding: 26px 28px;
+      }
+
+      header h1 {
+        margin: 0 0 4px;
+        font-size: 24px;
+        letter-spacing: 0.02em;
+      }
+
+      header p {
+        margin: 0;
+        font-size: 14px;
+        opacity: 0.9;
+      }
+
+      main {
+        max-width: 1100px;
+        margin: 24px auto 48px;
+        padding: 0 16px;
+        display: grid;
+        gap: 16px;
+      }
+
+      section {
+        background: var(--surface);
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        padding: 20px;
+        border: 1px solid var(--border);
+      }
+
+      h2 {
+        margin: 0 0 12px;
+        font-size: 18px;
+      }
+
+      .grid {
+        display: grid;
+        gap: 12px;
+      }
+
+      .grid.two {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+
+      label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--muted);
+      }
+
+      input, select, textarea, button {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        font-size: 14px;
+      }
+
+      textarea {
+        min-height: 80px;
+        resize: vertical;
+      }
+
+      button {
+        background: var(--brand);
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+      }
+
+      button.secondary {
+        background: var(--surface-alt);
+        color: var(--ink);
+      }
+
+      button.ghost {
+        background: transparent;
+        border: 1px dashed var(--brand);
+        color: var(--brand);
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+
+      th, td {
+        text-align: left;
+        padding: 10px;
+        border-bottom: 1px solid #edf2f7;
+      }
+
+      th {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+      }
+
+      .status-pill {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        background: #e9f2ff;
+        color: #0f4c81;
+      }
+
+      .status-verified {
+        background: #d1fae5;
+        color: #065f46;
+      }
+
+      .status-rejected {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      .message {
+        margin-top: 10px;
+        font-size: 13px;
+        color: #334e68;
+      }
+
+      .meta {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .token-box {
+        background: var(--surface-alt);
+        border-radius: 10px;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>DocUsafe Upload Portal</h1>
+      <p>JWT-ready UI for students to upload and share documents, and for admins/teachers to review.</p>
+    </header>
+
+    <main>
+      <section>
+        <h2>Authentication</h2>
+        <div class="grid two">
+          <div>
+            <label for="loginEmail">Email</label>
+            <input id="loginEmail" type="email" placeholder="user@example.com" />
+          </div>
+          <div>
+            <label for="loginPassword">Password</label>
+            <input id="loginPassword" type="password" placeholder="Your password" />
+          </div>
+        </div>
+        <div class="actions" style="margin-top: 12px;">
+          <button id="loginBtn">Login</button>
+          <button id="logoutBtn" class="secondary">Logout</button>
+        </div>
+        <div class="message" id="authMessage"></div>
+        <div class="token-box" style="margin-top: 10px;">
+          <div class="meta" id="authStatus">Not authenticated</div>
+        </div>
+        <div class="grid two" style="margin-top: 16px;">
+          <div>
+            <label for="regName">Register (Student) - Name</label>
+            <input id="regName" type="text" placeholder="Jane Student" />
+          </div>
+          <div>
+            <label for="regEmail">Register (Student) - Email</label>
+            <input id="regEmail" type="email" placeholder="student@example.com" />
+          </div>
+          <div>
+            <label for="regPassword">Register (Student) - Password</label>
+            <input id="regPassword" type="password" placeholder="At least 6 characters" />
+          </div>
+          <div>
+            <label for="regRole">Role (first user only)</label>
+            <select id="regRole">
+              <option value="">Student (default)</option>
+              <option value="ADMIN">Admin</option>
+              <option value="TEACHER">Teacher</option>
+            </select>
+          </div>
+          <div>
+            <label for="regEnrollment">Enrollment Number (optional)</label>
+            <input id="regEnrollment" type="text" placeholder="2024-CS-001" />
+          </div>
+          <div>
+            <label for="regCourse">Course (optional)</label>
+            <input id="regCourse" type="text" placeholder="Computer Science" />
+          </div>
+          <div>
+            <label for="regYear">Year (optional)</label>
+            <input id="regYear" type="number" placeholder="2" />
+          </div>
+        </div>
+        <div class="actions" style="margin-top: 12px;">
+          <button id="registerBtn" class="ghost">Register Student</button>
+        </div>
+      </section>
+
+      <section>
+        <h2>Create User (Admin only)</h2>
+        <div class="grid two">
+          <div>
+            <label for="userName">Name</label>
+            <input id="userName" type="text" placeholder="Jane Doe" />
+          </div>
+          <div>
+            <label for="userEmail">Email</label>
+            <input id="userEmail" type="email" placeholder="jane@example.com" />
+          </div>
+          <div>
+            <label for="userPassword">Password</label>
+            <input id="userPassword" type="password" placeholder="Temporary password" />
+          </div>
+          <div>
+            <label for="userRole">Role</label>
+            <select id="userRole">
+              <option value="STUDENT">Student</option>
+              <option value="ADMIN">Admin</option>
+              <option value="TEACHER">Teacher</option>
+            </select>
+          </div>
+          <div>
+            <label for="userEnrollment">Enrollment Number (optional)</label>
+            <input id="userEnrollment" type="text" placeholder="2024-CS-001" />
+          </div>
+          <div>
+            <label for="userCourse">Course (optional)</label>
+            <input id="userCourse" type="text" placeholder="Computer Science" />
+          </div>
+          <div>
+            <label for="userYear">Year (optional)</label>
+            <input id="userYear" type="number" placeholder="2" />
+          </div>
+        </div>
+        <div class="actions" style="margin-top: 12px;">
+          <button id="createUserBtn">Create User</button>
+          <button id="loadUsersBtn" class="secondary">Load Users</button>
+          <button id="loadTeachersBtn" class="secondary">Load Teachers</button>
+        </div>
+        <div class="message" id="userMessage"></div>
+        <div id="usersList"></div>
+      </section>
+
+      <section>
+        <h2>Student Upload</h2>
+        <div class="grid two">
+          <div>
+            <label for="uploadTitle">Document Title</label>
+            <input id="uploadTitle" type="text" placeholder="Transcript" />
+          </div>
+          <div>
+            <label for="uploadFile">Document File</label>
+            <input id="uploadFile" type="file" />
+          </div>
+        </div>
+        <div class="grid">
+          <div>
+            <label for="uploadDescription">Description (optional)</label>
+            <textarea id="uploadDescription" placeholder="Short description"></textarea>
+          </div>
+        </div>
+        <div class="actions" style="margin-top: 12px;">
+          <button id="uploadBtn">Upload Document</button>
+        </div>
+        <div class="message" id="uploadMessage"></div>
+      </section>
+
+      <section>
+        <h2>Share Document with Teachers</h2>
+        <div class="grid two">
+          <div>
+            <label for="shareDocId">Document ID</label>
+            <input id="shareDocId" type="text" placeholder="Document UUID" />
+          </div>
+          <div>
+            <label for="shareTeacherIds">Teacher IDs (comma separated)</label>
+            <input id="shareTeacherIds" type="text" placeholder="uuid1, uuid2" />
+          </div>
+        </div>
+        <div class="grid">
+          <label>
+            <input id="shareReplace" type="checkbox" checked /> Replace existing shares
+          </label>
+        </div>
+        <div class="actions" style="margin-top: 12px;">
+          <button id="shareBtn">Share Document</button>
+        </div>
+        <div class="message" id="shareMessage"></div>
+      </section>
+
+      <section>
+        <h2>Admin/Teacher Review</h2>
+        <div class="grid two">
+          <div>
+            <label for="statusFilter">Status Filter</label>
+            <select id="statusFilter">
+              <option value="">All</option>
+              <option value="PENDING">Pending</option>
+              <option value="VERIFIED">Verified</option>
+              <option value="REJECTED">Rejected</option>
+            </select>
+          </div>
+        </div>
+        <div class="actions" style="margin-top: 12px;">
+          <button id="loadDocsBtn">Load Documents</button>
+        </div>
+        <div class="message" id="docsMessage"></div>
+        <div style="overflow-x: auto; margin-top: 12px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Student</th>
+                <th>Status</th>
+                <th>Uploaded</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="docsTable"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const apiBase = "/api";
+      let authToken = localStorage.getItem("docusafe_token") || "";
+      let currentUser = null;
+
+      const authMessage = document.getElementById("authMessage");
+      const userMessage = document.getElementById("userMessage");
+      const uploadMessage = document.getElementById("uploadMessage");
+      const shareMessage = document.getElementById("shareMessage");
+      const docsMessage = document.getElementById("docsMessage");
+      const authStatus = document.getElementById("authStatus");
+
+      function setMessage(element, text, isError = false) {
+        element.textContent = text;
+        element.style.color = isError ? "#b91c1c" : "#1f2933";
+      }
+
+      function updateAuthStatus() {
+        if (!authToken || !currentUser) {
+          authStatus.textContent = "Not authenticated";
+          return;
+        }
+        authStatus.textContent = `Logged in as ${currentUser.name} (${currentUser.role})`;
+      }
+
+      function setAuth(token, user) {
+        authToken = token || "";
+        currentUser = user || null;
+        if (authToken) {
+          localStorage.setItem("docusafe_token", authToken);
+        } else {
+          localStorage.removeItem("docusafe_token");
+        }
+        updateAuthStatus();
+      }
+
+      function authHeaders() {
+        return authToken ? { Authorization: `Bearer ${authToken}` } : {};
+      }
+
+      async function fetchJson(url, options = {}) {
+        const headers = Object.assign({}, options.headers || {}, authHeaders());
+        const response = await fetch(url, { ...options, headers });
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || "Request failed");
+        }
+        return data.data;
+      }
+
+      updateAuthStatus();
+
+      document.getElementById("loginBtn").addEventListener("click", async () => {
+        try {
+          const payload = {
+            email: document.getElementById("loginEmail").value.trim(),
+            password: document.getElementById("loginPassword").value.trim()
+          };
+          const data = await fetchJson(`${apiBase}/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          setAuth(data.token, data.user);
+          setMessage(authMessage, "Login successful.");
+        } catch (error) {
+          setMessage(authMessage, error.message, true);
+        }
+      });
+
+      document.getElementById("logoutBtn").addEventListener("click", () => {
+        setAuth("", null);
+        setMessage(authMessage, "Logged out.");
+      });
+
+      document.getElementById("registerBtn").addEventListener("click", async () => {
+        try {
+          const payload = {
+            name: document.getElementById("regName").value.trim(),
+            email: document.getElementById("regEmail").value.trim(),
+            password: document.getElementById("regPassword").value.trim(),
+            role: document.getElementById("regRole").value || null,
+            enrollmentNumber: document.getElementById("regEnrollment").value.trim() || null,
+            course: document.getElementById("regCourse").value.trim() || null,
+            year: parseInt(document.getElementById("regYear").value, 10) || null
+          };
+          const data = await fetchJson(`${apiBase}/auth/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          setAuth(data.token, data.user);
+          setMessage(authMessage, "Registration successful.");
+        } catch (error) {
+          setMessage(authMessage, error.message, true);
+        }
+      });
+
+      document.getElementById("createUserBtn").addEventListener("click", async () => {
+        const payload = {
+          name: document.getElementById("userName").value.trim(),
+          email: document.getElementById("userEmail").value.trim(),
+          password: document.getElementById("userPassword").value.trim(),
+          role: document.getElementById("userRole").value,
+          enrollmentNumber: document.getElementById("userEnrollment").value.trim() || null,
+          course: document.getElementById("userCourse").value.trim() || null,
+          year: parseInt(document.getElementById("userYear").value, 10) || null
+        };
+
+        try {
+          const data = await fetchJson(`${apiBase}/users`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          setMessage(userMessage, `User created: ${data.id}`);
+        } catch (error) {
+          setMessage(userMessage, error.message, true);
+        }
+      });
+
+      document.getElementById("loadUsersBtn").addEventListener("click", async () => {
+        const list = document.getElementById("usersList");
+        list.innerHTML = "";
+        try {
+          const users = await fetchJson(`${apiBase}/users`);
+          if (!users.length) {
+            setMessage(userMessage, "No users yet.");
+            return;
+          }
+          setMessage(userMessage, `Loaded ${users.length} users.`);
+          const ul = document.createElement("ul");
+          users.forEach(user => {
+            const li = document.createElement("li");
+            li.textContent = `${user.name} (${user.role}) - ${user.id}`;
+            ul.appendChild(li);
+          });
+          list.appendChild(ul);
+        } catch (error) {
+          setMessage(userMessage, error.message, true);
+        }
+      });
+
+      document.getElementById("loadTeachersBtn").addEventListener("click", async () => {
+        const list = document.getElementById("usersList");
+        list.innerHTML = "";
+        try {
+          const teachers = await fetchJson(`${apiBase}/teachers`);
+          if (!teachers.length) {
+            setMessage(userMessage, "No teachers yet.");
+            return;
+          }
+          setMessage(userMessage, `Loaded ${teachers.length} teachers.`);
+          const ul = document.createElement("ul");
+          teachers.forEach(user => {
+            const li = document.createElement("li");
+            li.textContent = `${user.name} (${user.role}) - ${user.id}`;
+            ul.appendChild(li);
+          });
+          list.appendChild(ul);
+        } catch (error) {
+          setMessage(userMessage, error.message, true);
+        }
+      });
+
+      document.getElementById("uploadBtn").addEventListener("click", async () => {
+        const title = document.getElementById("uploadTitle").value.trim();
+        const description = document.getElementById("uploadDescription").value.trim();
+        const file = document.getElementById("uploadFile").files[0];
+
+        if (!title || !file) {
+          setMessage(uploadMessage, "Title and file are required.", true);
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("title", title);
+        if (description) {
+          formData.append("description", description);
+        }
+        formData.append("file", file);
+
+        try {
+          const response = await fetch(`${apiBase}/documents`, {
+            method: "POST",
+            headers: authHeaders(),
+            body: formData
+          });
+          const data = await response.json();
+          if (!response.ok || !data.success) {
+            throw new Error(data.message || "Upload failed");
+          }
+          setMessage(uploadMessage, "Upload successful.");
+        } catch (error) {
+          setMessage(uploadMessage, error.message, true);
+        }
+      });
+
+      document.getElementById("shareBtn").addEventListener("click", async () => {
+        const docId = document.getElementById("shareDocId").value.trim();
+        const teacherIds = document.getElementById("shareTeacherIds").value
+          .split(",")
+          .map(value => value.trim())
+          .filter(value => value);
+        const replace = document.getElementById("shareReplace").checked;
+
+        if (!docId || !teacherIds.length) {
+          setMessage(shareMessage, "Document ID and teacher IDs are required.", true);
+          return;
+        }
+
+        try {
+          await fetchJson(`${apiBase}/documents/${docId}/share`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ teacherIds, replace })
+          });
+          setMessage(shareMessage, "Document shared successfully.");
+        } catch (error) {
+          setMessage(shareMessage, error.message, true);
+        }
+      });
+
+      document.getElementById("loadDocsBtn").addEventListener("click", async () => {
+        const status = document.getElementById("statusFilter").value;
+        const table = document.getElementById("docsTable");
+        table.innerHTML = "";
+        let url = `${apiBase}/documents`;
+        if (status) {
+          url += `?status=${encodeURIComponent(status)}`;
+        }
+        try {
+          const documents = await fetchJson(url);
+          if (!documents.length) {
+            setMessage(docsMessage, "No documents found.");
+            return;
+          }
+          setMessage(docsMessage, `Loaded ${documents.length} documents.`);
+          documents.forEach(doc => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${doc.title}</td>
+              <td>${doc.uploadedBy ? doc.uploadedBy.name : "Unknown"}</td>
+              <td><span class="status-pill status-${doc.status.toLowerCase()}">${doc.status}</span></td>
+              <td>${doc.uploadedAt ? new Date(doc.uploadedAt).toLocaleString() : "-"}</td>
+              <td>
+                <button data-action="verify" data-id="${doc.id}">Verify</button>
+                <button data-action="reject" data-id="${doc.id}" class="secondary">Reject</button>
+                <button data-action="download" data-id="${doc.id}" data-name="${doc.fileName}" class="secondary">Download</button>
+              </td>
+            `;
+            table.appendChild(row);
+          });
+        } catch (error) {
+          setMessage(docsMessage, error.message, true);
+        }
+      });
+
+      document.getElementById("docsTable").addEventListener("click", async (event) => {
+        const target = event.target;
+        if (!target.dataset.action) {
+          return;
+        }
+        const action = target.dataset.action;
+        const docId = target.dataset.id;
+
+        try {
+          if (action === "verify") {
+            await fetchJson(`${apiBase}/documents/${docId}/verify`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ remarks: "" })
+            });
+          }
+          if (action === "reject") {
+            const reason = window.prompt("Reason for rejection?");
+            if (!reason) {
+              return;
+            }
+            await fetchJson(`${apiBase}/documents/${docId}/reject`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ reason })
+            });
+          }
+          if (action === "download") {
+            const response = await fetch(`${apiBase}/documents/${docId}/download`, {
+              headers: authHeaders()
+            });
+            if (!response.ok) {
+              const data = await response.json();
+              throw new Error(data.message || "Download failed");
+            }
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = target.dataset.name || "document";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+          }
+          setMessage(docsMessage, "Action completed.");
+        } catch (error) {
+          setMessage(docsMessage, error.message, true);
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,67 @@
+services:
+  app:
+    build:
+      context: .
+    image: ${DOCUSAFE_IMAGE:-docusafe:local}
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/docusafe
+      DB_USER: docusafe
+      DB_PASSWORD: docusafe
+      JPA_DDL_AUTO: validate
+      DOCUSAFE_STORAGE_PATH: /data/documents
+      DOCUSAFE_JWT_SECRET: ${DOCUSAFE_JWT_SECRET}
+    volumes:
+      - documents:/data/documents
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: docusafe
+      POSTGRES_USER: docusafe
+      POSTGRES_PASSWORD: docusafe
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U docusafe -d docusafe"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      app:
+        condition: service_healthy
+
+  grafana:
+    image: grafana/grafana:11.2.2
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      prometheus:
+        condition: service_started
+
+volumes:
+  documents:
+  db_data:
+  grafana_data:

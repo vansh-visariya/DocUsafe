@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DocUsafe Login</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap");
+
+      :root {
+        color-scheme: light;
+        --ink: #0f172a;
+        --muted: #64748b;
+        --brand: #0f4c81;
+        --surface: #ffffff;
+        --border: #e2e8f0;
+      }
+
+      body {
+        font-family: "Space Grotesk", sans-serif;
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at top, #e0f2ff 0%, #f8fafc 60%);
+        color: var(--ink);
+      }
+
+      .card {
+        width: min(420px, 92vw);
+        background: var(--surface);
+        border-radius: 16px;
+        padding: 28px;
+        box-shadow: 0 20px 40px rgba(15, 76, 129, 0.2);
+        border: 1px solid var(--border);
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 24px;
+      }
+
+      p {
+        margin: 0 0 18px;
+        color: var(--muted);
+      }
+
+      label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+
+      input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        margin-bottom: 14px;
+        font-size: 14px;
+      }
+
+      button {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 10px;
+        background: var(--brand);
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .alert {
+        background: #ffe4e6;
+        color: #9f1239;
+        padding: 10px 12px;
+        border-radius: 10px;
+        font-size: 13px;
+        margin-bottom: 12px;
+      }
+
+      .info {
+        background: #dbeafe;
+        color: #1e3a8a;
+        padding: 10px 12px;
+        border-radius: 10px;
+        font-size: 13px;
+        margin-bottom: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>DocUsafe Login</h1>
+      <p>Use your email and password to access the dashboard.</p>
+
+      <div th:if="${param.error}" class="alert">Invalid credentials. Try again.</div>
+      <div th:if="${param.logout}" class="info">Logged out successfully.</div>
+
+      <form th:action="@{/login}" method="post">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" placeholder="name@example.com" required />
+
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" placeholder="Your password" required />
+
+        <button type="submit">Sign in</button>
+      </form>
+    </div>
+  </body>
+</html>
